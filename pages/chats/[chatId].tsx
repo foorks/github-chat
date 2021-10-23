@@ -52,6 +52,15 @@ const ViewChat: NextPage = () => {
   });
 
   const [updatedMembersAt, setUpdatedMembersAt] = useState<string>();
+  const [canSendNotifications, setCanSendNotifications] = useState(Notification.permission === "granted");
+
+  useEffect(() => {
+    if (Notification.permission !== "granted") {
+      Notification.requestPermission().then(function (result) {
+        setCanSendNotifications(result === "granted");
+      });
+    }
+  }, [])
 
   useEffect(() => {
     if (chatId && user) {
@@ -155,6 +164,16 @@ const ViewChat: NextPage = () => {
           if (error || !message) {
             // TODO
             return;
+          }
+
+          if (canSendNotifications) {
+            if (message.content == null) {
+              if ((message.files ?? []).length >= 1) {
+                new Notification('Github Chat', { body: "New attachment.", icon: '/twitter-logo.png' });
+              }
+            } else {
+              new Notification('Github Chat', { body: message.content, icon: '/twitter-logo.png' });
+            }
           }
 
           // TODO Get RealTime Views Working!
